@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use http::uri::Uri;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use uuid::Uuid;
@@ -29,8 +30,42 @@ pub enum Priority {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Eq)]
-pub struct ContextSwitchMetadata {
-    pub test: u32,
+pub struct Bookmark {
+    #[serde(with = "uri")]
+    pub uri: Uri,
+    pub content: Option<BookmarkContent>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Eq)]
+pub struct BookmarkContent {
+    pub title: String,
+    pub content_preview: Option<String>,
+}
+
+pub mod uri {
+    use http::uri::Uri;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(uri: &Uri, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let uri_str = uri.to_string();
+        serializer.serialize_str(&uri_str)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Uri, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        s.parse::<Uri>().map_err(serde::de::Error::custom)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Eq)]
+pub struct ContextswitchData {
+    pub bookmarks: Vec<Bookmark>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Eq)]
@@ -87,7 +122,7 @@ pub struct Task {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub contextswitch: Option<ContextSwitchMetadata>,
+    pub contextswitch: Option<ContextswitchData>,
 }
 
 #[derive(Deserialize, Serialize)]
