@@ -13,6 +13,12 @@ pub enum Recurrence {
     Yearly,
 }
 
+impl fmt::Display for Recurrence {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format!("{:?}", self).to_lowercase())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
@@ -22,6 +28,12 @@ pub enum Status {
     Deleted,
 }
 
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format!("{:?}", self).to_lowercase())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy, Eq)]
 pub enum Priority {
     H,
@@ -29,10 +41,17 @@ pub enum Priority {
     L,
 }
 
+impl fmt::Display for Priority {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Eq)]
 pub struct Bookmark {
     #[serde(with = "uri")]
     pub uri: Uri,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content: Option<BookmarkContent>,
 }
 
@@ -112,7 +131,7 @@ pub struct Task {
     )]
     pub wait: Option<DateTime<Utc>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub parent: Option<Uuid>,
+    pub parent: Option<TaskId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
